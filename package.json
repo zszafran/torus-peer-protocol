@@ -1,0 +1,20 @@
+{
+  "name": "torrent-peer-protocol",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha",
+    "docs": "jsdoc2md -t README.template lib/*.js > README.md"
+  },
+  "dependencies": {
+    "bitfield": "^2.0.0",
+    "debug": "^3.1.0"
+  },
+  "devDependencies": {
+    "buffer-equal": "^1.0.0",
+    "chai": "^4.1.2",
+    "jsdoc-to-markdown": "^4.0.1",
+    "mocha": "^5.1.1"
+  }
+}
