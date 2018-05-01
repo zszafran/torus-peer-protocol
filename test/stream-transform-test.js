@@ -52,8 +52,8 @@ describe("StreamTransform", () => {
     });
   });
 
-  describe("Message", () => {
-    it("should parse a bitfield message from a single chunk", done => {
+  describe("Single Message", () => {
+    it("should parse a single message from a single chunk", done => {
       const messages = [];
       const stream = buildStream_(message => {
         messages.push(message);
@@ -66,7 +66,7 @@ describe("StreamTransform", () => {
       stream.write(data.Bitfield.BUFFER);
     });
 
-    it("should parse a bitfield message from multiple medium chunks", done => {
+    it("should parse a single message from multiple medium chunks", done => {
       const messages = [];
       const stream = buildStream_(message => {
         messages.push(message);
@@ -80,10 +80,9 @@ describe("StreamTransform", () => {
       stream.write(data.Bitfield.BUFFER.slice(7));
     });
 
-    it("should parse a bitfield message from multiple small chunks", done => {
+    it("should parse a single message from multiple small chunks", done => {
       const messages = [];
       const stream = buildStream_(message => {
-        console.log(message);
         messages.push(message);
         if (messages.length == 2) {
           expect(messages[1].toBuffer()).to.equalBuffer(data.Bitfield.BUFFER);
@@ -92,6 +91,66 @@ describe("StreamTransform", () => {
       });
       stream.write(data.Handshake.BUFFER);
       data.Bitfield.BUFFER.forEach(val => {
+        stream.write(Buffer.from([val]));
+      });
+    });
+  });
+
+  describe("Multiple Messages", () => {
+    it("should parse multiple messages from full chunks", done => {
+      const messages = [];
+      const stream = buildStream_(message => {
+        messages.push(message);
+        if (messages.length == 4) {
+          expect(messages[1].toBuffer()).to.equalBuffer(data.Bitfield.BUFFER);
+          expect(messages[2].toBuffer()).to.equalBuffer(data.Unchoke.BUFFER);
+          expect(messages[3].toBuffer()).to.equalBuffer(data.Piece.BUFFER);
+          done();
+        }
+      });
+      stream.write(data.Handshake.BUFFER);
+      stream.write(data.Bitfield.BUFFER);
+      stream.write(data.Unchoke.BUFFER);
+      stream.write(data.Piece.BUFFER);
+    });
+
+    it("should parse multiple messages from multiple medium chunks", done => {
+      const messages = [];
+      const stream = buildStream_(message => {
+        messages.push(message);
+        if (messages.length == 2) {
+          expect(messages[1].toBuffer()).to.equalBuffer(data.Bitfield.BUFFER);
+          done();
+        }
+      });
+      stream.write(data.Handshake.BUFFER);
+      stream.write(data.Bitfield.BUFFER.slice(0, 7));
+      stream.write(data.Bitfield.BUFFER.slice(7));
+      stream.write(data.Unchoke.BUFFER.slice(0, 3));
+      stream.write(data.Unchoke.BUFFER.slice(3));
+      stream.write(data.Piece.BUFFER.slice(0, 7));
+      stream.write(data.Piece.BUFFER.slice(7));
+    });
+
+    it("should parse multiple messages from multiple small chunks", done => {
+      const messages = [];
+      const stream = buildStream_(message => {
+        messages.push(message);
+        if (messages.length == 4) {
+          expect(messages[1].toBuffer()).to.equalBuffer(data.Bitfield.BUFFER);
+          expect(messages[2].toBuffer()).to.equalBuffer(data.Unchoke.BUFFER);
+          expect(messages[3].toBuffer()).to.equalBuffer(data.Piece.BUFFER);
+          done();
+        }
+      });
+      stream.write(data.Handshake.BUFFER);
+      data.Bitfield.BUFFER.forEach(val => {
+        stream.write(Buffer.from([val]));
+      });
+      data.Unchoke.BUFFER.forEach(val => {
+        stream.write(Buffer.from([val]));
+      });
+      data.Piece.BUFFER.forEach(val => {
         stream.write(Buffer.from([val]));
       });
     });
